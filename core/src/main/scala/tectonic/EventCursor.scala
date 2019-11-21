@@ -105,7 +105,8 @@ final class EventCursor private (
         case 0xA => plate.unnest()
         case 0xB => continue = false
         case 0xC => plate.skipped(nextInt())
-        case tag => sys.error(s"assertion failed: unrecognized tag = $tag")
+        case 0xD => continue = false     // note to self: do we need to lookahead/behind at 0xB to check for this state?
+        case tag => sys.error(s"assertion failed: unrecognized tag = ${tag.toHexString}")
       }
 
       hasNext = !(tagCursor == tagLimit && tagSubShiftCursor == tagSubShiftLimit)
@@ -434,6 +435,7 @@ object EventCursor {
   private[tectonic] val Unnest = 0xA
   private[tectonic] val FinishRow = 0xB
   private[tectonic] val Skipped = 0xC
+  private[tectonic] val EndBatch = 0xD    // special columnar boundary terminator
 
   private[tectonic] def apply(
       tagBuffer: Array[Long],
